@@ -13,9 +13,6 @@ export const initMongoConnection = async () => {
     );
     const dbName = mongoose.connection.name;
     
-    // Теперь вы можете использовать переменную contactsCollection для выполнения операций с этой коллекцией
-    // Например, выполните поиск всех элементов в коллекции
-    
 
     console.log(`Successfully connected to MongoDB database: ${dbName}`);
     console.log('Mongo connection successfully established!');
