@@ -2,9 +2,32 @@ import express from 'express';
 import cors from 'cors';
 import pino from 'pino-http';
 import { env } from './utils/env.js';
-import { getContactById, getContacts } from './services/contacts.js';
+import contactsRouter from './routers/contacts.js';
+import { HttpError } from 'http-errors';
 
 const PORT = Number(env('PORT', '3000'));
+export const notFoundHandler = (req, res, next) => {
+  res.status(404).json({
+    message: 'Route not found',
+  });
+};
+export const errorHandler = (err, req, res, next) => {
+  // Перевірка, чи отримали ми помилку від createHttpError
+  if (err instanceof HttpError) {
+    res.status(err.status).json({
+      status: err.status,
+      message: err.name,
+      data: err,
+    });
+    return;
+  }
+
+  res.status(500).json({
+    status: 500,
+    message: 'Something went wrong',
+    data: err.message,
+  });
+};
 export const setupServer = () => {
     const app = express();
     app.use(cors());
@@ -15,38 +38,16 @@ export const setupServer = () => {
       },
     }),
     );
-  
+  app.use(express.json());
     app.use((req, res, next) => { console.log(`Time:${new Date().toLocaleString()}`); next(); });
     app.get('/', (req, res) => { res.json({ message: 'Hello World - как-то так' }); });
-    app.get('/contacts', async (req, res) => {
-         try {
-            const contacts = await getContacts();
-            res.status(200).json({ data: contacts, message: "Successfully found contacts!" });
-        } catch (error) {
-            res.status(500).json({ message: 'Error fetching contacts', error: error.message });
-        }
-    });
-  app.get('/contacts/:id', async (req, res) => {
-      try {
-            console.log ('request params', req.params);
-            const contact = await getContactById(req.params.id);
-            console.log ('we manage to get contact', contact);
-            if (!contact) {
-                return res.status(404).json({
-                    status: 404,
-                    message: `Contact with id ${req.params.id} not found`
-                });
-            }
-            res.status(200).json({ data: contact, message:`Successfully found contact with id ${req.params.id}` });
-          
-        } catch (error) {
-            
-            res.status(500).json({ message: 'Error fetching contact', error: error.message });
-        }
-    });
+    app.use(contactsRouter);
   app.use('*', (req, res, next) => {
         res.status(404).json({ message: 'Not found' });
-    });
+  });
+    app.use('*', notFoundHandler);
+
+  app.use(errorHandler);
     app.listen(PORT, () => console.log(`Server started on ${PORT}`));
 };
 // mongodb+srv://mishynk:hh65ovckRVz8OtsF@cluster0.tgrsice.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
