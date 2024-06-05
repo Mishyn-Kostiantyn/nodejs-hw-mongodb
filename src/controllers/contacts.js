@@ -4,21 +4,21 @@ import createHttpError from "http-errors";
 export const getContactsController = async (req, res) => {
     try {
             const contacts = await getContacts();
-            res.status(200).json({ data: contacts, message: "Successfully found contacts!" });
+            res.status(200).json({  status: 200, data: contacts, message: "Successfully found contacts!" });
         } catch (error) {
             res.status(500).json({ message: 'Error fetching contacts', error: error.message });
         }
 };
 export const getContactByIdController = async (req, res, next) => {
 try {
-            console.log ('request params', req.params);
+            
             const contact = await getContactById(req.params.id);
-            console.log ('we manage to get contact', contact);
+           
             if (!contact) {
-                next(createHttpError(404, 'Student not found'));
+                next(createHttpError(404, 'Contact not found'));
     return;
             }
-            res.status(200).json({ data: contact, message:`Successfully found contact with id ${req.params.id}` });
+            res.status(200).json({ status: 200, data: contact, message:`Successfully found contact with id ${req.params.id}` });
           
         } catch (error) {
             
@@ -28,8 +28,7 @@ try {
 };
 export const createContactController = async (req, res) => {
     try {
-        console.log('Request body:', req.body); 
-
+       
         if (!req.body.name || !req.body.phoneNumber || !req.body.contactType) {
             return res.status(400).json({
                 status: 400,
@@ -78,7 +77,7 @@ export const patchContactController =async (req, res, next) => {
   res.json({
     status: 200,
     message: `Successfully patched a contact!`,
-    data: result.student,
+    data: result.contact,
   });
 };
 
