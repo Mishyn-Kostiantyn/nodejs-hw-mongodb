@@ -44,7 +44,7 @@ export const createContactController = async (req, res) => {
             data: contact,
         });
     } catch (error) {
-        console.error('Error in createContactController:', error); // Лог ошибки
+        
         res.status(500).json({
             status: 500,
             message: 'Something went wrong',
