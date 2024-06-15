@@ -3,16 +3,22 @@ import mongoose from 'mongoose';
 import { calculatePaginationData } from "../utils/calculatePaginationData.js";
 import { SORT_ORDER } from "../constants/index.js";
 export const getContacts = async ({ page = 1, perPage = 5, sortBy='name',sortOrder=SORT_ORDER.ASC,filter={}  }) => {
-  const limit = perPage;
-  const skip = (page - 1) * perPage;
+  
   
 
   const contactsQuery = Contacts.find();
   // console.log(filter);
   if (filter.contactType) { contactsQuery.where('contactType').equals(filter.contactType); };
-  if (filter.isFavourite !== undefined) { contactsQuery.where('isFavourite',filter.isFavourite); };
-  const [contactsCount, contacts] = await Promise.all([Contacts.find().merge(contactsQuery).countDocuments(), contactsQuery.skip(skip).limit(limit).sort({[sortBy]:sortOrder}).exec()]);
-  const paginationData=calculatePaginationData(contactsCount,page,perPage);
+  if (filter.isFavourite !== undefined) { contactsQuery.where('isFavourite', filter.isFavourite); };
+  const contactsCount = await Contacts.find().merge(contactsQuery).countDocuments();
+  const paginationData = calculatePaginationData(contactsCount, page, perPage);
+  const numberOfPages=paginationData.totalPages;
+  const skip = (page <= numberOfPages) ? (page - 1) * perPage : 0;
+  const limit = perPage;
+  const contacts = await contactsQuery.skip(skip).limit(limit).sort({ [sortBy]: sortOrder }).exec();
+  // const [contactsCount, contacts] = await Promise.all([Contacts.find().merge(contactsQuery).countDocuments(),
+  // contactsQuery.skip(skip).limit(limit).sort({ [sortBy]: sortOrder }).exec()]);
+  
   return {
     data: contacts,
     ...paginationData,
