@@ -1,9 +1,16 @@
 import { getContactById, getContacts, createContact, deleteContact, updateContact } from "../services/contacts.js";
 import createHttpError from "http-errors";
+import { parsePaginationParams } from "../utils/parsePaginationParams.js";
+import { parseSortParams } from "../utils/parseSortParams.js";
+import { parseFilterParams } from "../utils/parseFilterParams.js";
 
 export const getContactsController = async (req, res) => {
     try {
-            const contacts = await getContacts();
+        const { page = 1, perPage = 5 } = parsePaginationParams(req.query);
+        const { sortby, sortOrder } = parseSortParams(req.query);
+        const filter = parseFilterParams(req.query);
+        // console.log('Параметры запроса:', req.query);
+        const contacts = await getContacts({ page, perPage, sortby, sortOrder, filter });
             res.status(200).json({  status: 200, data: contacts, message: "Successfully found contacts!" });
         } catch (error) {
             res.status(500).json({ message: 'Error fetching contacts', error: error.message });
@@ -81,3 +88,10 @@ export const patchContactController =async (req, res, next) => {
   });
 };
 
+export const validateBody = (schema) => async (req, res, next) => { 
+    try {await schema.validateAsync(req.body, { abortEarly: false });
+        next();
+
+    }
+    catch (error) { next(createHttpError(400, { message: 'Bad Request', error: error.details.map(e => e.message) } ));}
+};

@@ -1,9 +1,22 @@
 import { Contacts } from "../db/models/contact.js";
 import mongoose from 'mongoose';
-export const getContacts = async () => {
-    const contacts = await Contacts.find();
+import { calculatePaginationData } from "../utils/calculatePaginationData.js";
+import { SORT_ORDER } from "../constants/index.js";
+export const getContacts = async ({ page = 1, perPage = 5, sortBy='name',sortOrder=SORT_ORDER.ASC,filter={}  }) => {
+  const limit = perPage;
+  const skip = (page - 1) * perPage;
+  
 
-    return contacts;
+  const contactsQuery = Contacts.find();
+  // console.log(filter);
+  if (filter.contactType) { contactsQuery.where('contactType').equals(filter.contactType); };
+  if (filter.isFavourite !== undefined) { contactsQuery.where('isFavourite',filter.isFavourite); };
+  const [contactsCount, contacts] = await Promise.all([Contacts.find().merge(contactsQuery).countDocuments(), contactsQuery.skip(skip).limit(limit).sort({[sortBy]:sortOrder}).exec()]);
+  const paginationData=calculatePaginationData(contactsCount,page,perPage);
+  return {
+    data: contacts,
+    ...paginationData,
+  };
 };
 export    const getContactById = async (id) => {
 
