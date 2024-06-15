@@ -1,5 +1,7 @@
 import { Router } from "express";
-import { getContactByIdController, getContactsController, createContactController, deleteContactController, patchContactController } from "../controllers/contacts.js";
+import { getContactByIdController, getContactsController, createContactController, deleteContactController, patchContactController, validateBody } from "../controllers/contacts.js";
+import { createContactSchema } from "../validation/createContactSchema.js";
+import { updateContactSchema } from "../validation/updateContactSchema.js";
 
 const router = Router();
 export const ctrlWrapper = (controller) => {
@@ -13,7 +15,7 @@ export const ctrlWrapper = (controller) => {
 };
 router.get('/contacts',ctrlWrapper(getContactsController)) ;
 router.get('/contacts/:id', ctrlWrapper(getContactByIdController));
-router.post('/contacts', ctrlWrapper(createContactController));
-router.patch('/contacts/:id', ctrlWrapper(patchContactController));
+router.post('/contacts', validateBody(createContactSchema), ctrlWrapper(createContactController));
+router.patch('/contacts/:id',validateBody(updateContactSchema), ctrlWrapper(patchContactController));
 router.delete('/contacts/:id', ctrlWrapper(deleteContactController));
 export default router;
