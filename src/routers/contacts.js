@@ -13,9 +13,9 @@ export const ctrlWrapper = (controller) => {
     }
   };
 };
-router.get('/contacts',ctrlWrapper(getContactsController)) ;
-router.get('/contacts/:id',isValidId ,ctrlWrapper(getContactByIdController));
-router.post('/contacts', validateBody(createContactSchema), ctrlWrapper(createContactController));
-router.patch('/contacts/:id',isValidId,validateBody(updateContactSchema), ctrlWrapper(patchContactController));
-router.delete('/contacts/:id',isValidId, ctrlWrapper(deleteContactController));
+router.get('/',ctrlWrapper(getContactsController)) ;
+router.get('/:id',isValidId ,ctrlWrapper(getContactByIdController));
+router.post('/', validateBody(createContactSchema), ctrlWrapper(createContactController));
+router.patch('/:id',isValidId,validateBody(updateContactSchema), ctrlWrapper(patchContactController));
+router.delete('/:id',isValidId, ctrlWrapper(deleteContactController));
 export default router;
