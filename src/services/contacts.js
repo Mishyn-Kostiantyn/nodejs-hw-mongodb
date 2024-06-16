@@ -7,7 +7,7 @@ export const getContacts = async ({ page = 1, perPage = 5, sortBy='name',sortOrd
   
 
   const contactsQuery = Contacts.find();
-  // console.log(filter);
+  console.log(filter);
   if (filter.contactType) { contactsQuery.where('contactType').equals(filter.contactType); };
   if (filter.isFavourite !== undefined) { contactsQuery.where('isFavourite', filter.isFavourite); };
   const contactsCount = await Contacts.find().merge(contactsQuery).countDocuments();
