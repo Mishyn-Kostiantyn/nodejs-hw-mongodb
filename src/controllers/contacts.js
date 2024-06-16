@@ -3,14 +3,17 @@ import createHttpError from "http-errors";
 import { parsePaginationParams } from "../utils/parsePaginationParams.js";
 import { parseSortParams } from "../utils/parseSortParams.js";
 import { parseFilterParams } from "../utils/parseFilterParams.js";
+import { isValidObjectId } from "mongoose";
+
 
 export const getContactsController = async (req, res) => {
     try {
         const { page = 1, perPage = 5 } = parsePaginationParams(req.query);
-        const { sortby, sortOrder } = parseSortParams(req.query);
+        const { sortBy, sortOrder } = parseSortParams(req.query);
+        console.log('sortby:', sortBy, 'sortOrder:', sortOrder);
         const filter = parseFilterParams(req.query);
         // console.log('Параметры запроса:', req.query);
-        const contacts = await getContacts({ page, perPage, sortby, sortOrder, filter });
+        const contacts = await getContacts({ page, perPage, sortBy, sortOrder, filter });
             res.status(200).json({  status: 200, data: contacts, message: "Successfully found contacts!" });
         } catch (error) {
             res.status(500).json({ message: 'Error fetching contacts', error: error.message });
@@ -94,4 +97,13 @@ export const validateBody = (schema) => async (req, res, next) => {
 
     }
     catch (error) { next(createHttpError(400, { message: 'Bad Request', error: error.details.map(e => e.message) } ));}
+};
+export const isValidId = (req, res, next) => {
+   
+  const { id } = req.params;
+  if (!isValidObjectId(id)) {
+    next(createHttpError(404, "Invalid contact id"));
+  }
+
+  next();
 };
