@@ -2,7 +2,7 @@ import { Contacts } from "../db/models/contact.js";
 import mongoose from 'mongoose';
 import { calculatePaginationData } from "../utils/calculatePaginationData.js";
 import { SORT_ORDER } from "../constants/index.js";
-export const getContacts = async ({ page = 1, perPage = 5, sortBy='name',sortOrder=SORT_ORDER.ASC,filter={}  }) => {
+export const getContacts = async ({ page = 1, perPage = 5, sortBy='name',sortOrder=SORT_ORDER.ASC,filter={}, userId  }) => {
   
   
 
@@ -11,6 +11,7 @@ export const getContacts = async ({ page = 1, perPage = 5, sortBy='name',sortOrd
   console.log('filter_services:',filter);
   if (filter.contactType) { contactsQuery.where('contactType').equals(filter.contactType); };
   if (filter.isFavourite !== undefined) { contactsQuery.where('isFavourite', filter.isFavourite); };
+  contactsQuery.where('userId').equals(userId);
   const contactsCount = await Contacts.find().merge(contactsQuery).countDocuments();
   const paginationData = calculatePaginationData(contactsCount, page, perPage);
   const numberOfPages=paginationData.totalPages;
@@ -25,33 +26,44 @@ export const getContacts = async ({ page = 1, perPage = 5, sortBy='name',sortOrd
     ...paginationData,
   };
 };
-export    const getContactById = async (id) => {
+export    const getContactById = async (id, userId) => {
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-  return null;
+ if (!mongoose.Types.ObjectId.isValid(id)) {
+    
+    return null;
   }
-    const contact = await Contacts.findById(id);
-    return contact;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+   
+    return null;
+  }
+
+  
+
+  const contact = await Contacts.findOne({ _id: id, userId: userId });
+ 
+
+  return contact;
 };
-export const createContact= async (data) => {
+export const createContact= async (data, userId) => {
     try {
-        const contact = await Contacts.create(data);
+        const contact = await Contacts.create({...data,  userId: userId });
         return contact;
     } catch (error) {
         console.error('Error in createContact:', error);
         throw new Error(`Contact creation failed: ${error.message}`);
     }
 };
-export const deleteContact = async (contactId) => {
+export const deleteContact = async (contactId, userId) => {
   const contact = await Contacts.findOneAndDelete({
-    _id: contactId,
+    _id: contactId, userId: userId,
   });
 
   return contact;
 };
-export const updateContact = async (contactId, payload, options = {}) => {
+export const updateContact = async (contactId,userId, payload, options = {}) => {
   const rawResult = await Contacts.findOneAndUpdate(
-    { _id: contactId },
+    { _id: contactId, userId: userId },
     payload,
     {
       new: true,
