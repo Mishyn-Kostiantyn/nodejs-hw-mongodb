@@ -10,31 +10,37 @@ export const getContactsController = async (req, res) => {
     try {
         const { page = 1, perPage = 5 } = parsePaginationParams(req.query);
         const { sortBy, sortOrder } = parseSortParams(req.query);
-        console.log('sortby:', sortBy, 'sortOrder:', sortOrder);
+   
         const filter = parseFilterParams(req.query);
-        // console.log('Параметры запроса:', req.query);
-        const contacts = await getContacts({ page, perPage, sortBy, sortOrder, filter });
+        console.log('Параметры запроса:', filter);
+        const contacts = await getContacts({ page, perPage, sortBy, sortOrder, filter, userId: req.user._id});
             res.status(200).json({  status: 200, data: contacts, message: "Successfully found contacts!" });
         } catch (error) {
             res.status(500).json({ message: 'Error fetching contacts', error: error.message });
         }
 };
 export const getContactByIdController = async (req, res, next) => {
-try {
-            
-            const contact = await getContactById(req.params.id);
-           
-            if (!contact) {
-                next(createHttpError(404, 'Contact not found'));
-    return;
-            }
-            res.status(200).json({ status: 200, data: contact, message:`Successfully found contact with id ${req.params.id}` });
-          
-        } catch (error) {
-            
-            res.status(500).json({ message: 'Error fetching contact', error: error.message });
-        }
+  try {
+    const user = req.user;
+    const contactId = req.params.id;
+    const userId = user._id.toString(); 
+
+    console.log('Параметры запроса:', req.params);
+    console.log('ID пользователя:', userId);
+
+    const contact = await getContactById(contactId, userId);
     
+    if (!contact) {
+      console.log('Контакт не найден или не принадлежит пользователю');
+      next(createHttpError(403, 'Contact with this Id does not belong to yours contacts!'));
+      return;
+    }
+
+    res.status(200).json({ status: 200, data: contact, message: `Successfully found contact with id ${contactId}` });
+  } catch (error) {
+    
+    res.status(500).json({ message: 'Error fetching contact', error: error.message });
+  }
 };
 export const createContactController = async (req, res) => {
     try {
@@ -46,7 +52,7 @@ export const createContactController = async (req, res) => {
             });
         }
 
-        const contact = await createContact(req.body);
+        const contact = await createContact(req.body, req.user._id);
 
         res.status(201).json({
             status: 201,
@@ -64,23 +70,33 @@ export const createContactController = async (req, res) => {
     
 };
 export const deleteContactController = async (req, res, next) => {
-    const contactId= req.params.id;
-    
-  const contact = await deleteContact(contactId);
+    try {
+        const contactId = req.params.id;
+        const userId = req.user._id.toString();
+        const contact = await deleteContact(contactId, userId);
 
-  if (!contact) {
-    next(createHttpError(404, 'Contact not found'));
-    return;
-  }
+        if (!contact) {
+            next(createHttpError(403, 'Contact with this Id does not belong to yours contacts!'));
+            return;
+        }
 
-  res.status(204).send();
+        res.status(204).send();
+    } catch (error) {
+        
+        res.status(500).json({
+            status: 500,
+            message: 'Something went wrong',
+            data: error.message,
+        });
+    }
 };
 export const patchContactController =async (req, res, next) => {
-  const contactId = req.params.id;
-  const result = await updateContact(contactId, req.body);
+    const contactId = req.params.id;
+    const userId = req.user._id.toString();
+  const result = await updateContact(contactId, userId, req.body);
 
   if (!result) {
-    next(createHttpError(404, 'Contact not found'));
+    next(createHttpError(403, 'Contact with this Id does not belong to yours contacts!'));
     return;
   }
 
