@@ -35,7 +35,7 @@ export const loginUser = async ({email, password}) => {
   
 };
 export const logoutUser = async ({ sessionId, sessionToken }) => {
-  console.log('Завершение сессии для sessionId:', sessionId, 'и sessionToken:', sessionToken);
+ 
   return await SessionsCollection.deleteOne({_id:sessionId, refreshToken:sessionToken});
 };
 export const refreshSession = async ({ sessionId, sessionToken }) => {
