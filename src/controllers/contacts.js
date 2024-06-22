@@ -12,7 +12,7 @@ export const getContactsController = async (req, res) => {
         const { sortBy, sortOrder } = parseSortParams(req.query);
         console.log('sortby:', sortBy, 'sortOrder:', sortOrder);
         const filter = parseFilterParams(req.query);
-        // console.log('Параметры запроса:', req.query);
+        console.log('Параметры запроса:', filter);
         const contacts = await getContacts({ page, perPage, sortBy, sortOrder, filter });
             res.status(200).json({  status: 200, data: contacts, message: "Successfully found contacts!" });
         } catch (error) {

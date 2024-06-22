@@ -5,6 +5,7 @@ import { env } from './utils/env.js';
 
 import { HttpError } from 'http-errors';
 import rootRouter from './routers/index.js';
+import cookieParser from 'cookie-parser';
 
 const PORT = Number(env('PORT', '3000'));
 export const notFoundHandler = (req, res, next) => {
@@ -31,7 +32,8 @@ export const errorHandler = (err, req, res, next) => {
 };
 export const setupServer = () => {
     const app = express();
-    app.use(cors());
+  app.use(cors());
+  app.use(cookieParser());
     app.use(
     pino({
       transport: {
