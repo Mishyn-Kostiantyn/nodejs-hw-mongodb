@@ -12,7 +12,7 @@ export const getContactsController = async (req, res) => {
         const { sortBy, sortOrder } = parseSortParams(req.query);
    
         const filter = parseFilterParams(req.query);
-        console.log('Параметры запроса:', filter);
+       
         const contacts = await getContacts({ page, perPage, sortBy, sortOrder, filter, userId: req.user._id});
             res.status(200).json({  status: 200, data: contacts, message: "Successfully found contacts!" });
         } catch (error) {
@@ -25,13 +25,12 @@ export const getContactByIdController = async (req, res, next) => {
     const contactId = req.params.id;
     const userId = user._id.toString(); 
 
-    console.log('Параметры запроса:', req.params);
-    console.log('ID пользователя:', userId);
+
 
     const contact = await getContactById(contactId, userId);
     
     if (!contact) {
-      console.log('Контакт не найден или не принадлежит пользователю');
+   
       next(createHttpError(403, 'Contact with this Id does not belong to yours contacts!'));
       return;
     }
