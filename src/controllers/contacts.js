@@ -4,6 +4,9 @@ import { parsePaginationParams } from "../utils/parsePaginationParams.js";
 import { parseSortParams } from "../utils/parseSortParams.js";
 import { parseFilterParams } from "../utils/parseFilterParams.js";
 import { isValidObjectId } from "mongoose";
+import { saveFileToUploadDir } from "../utils/saveFileToUploadDir.js";
+import { saveFileToCloudinary } from "../utils/saveFileToCloudinary.js";
+import { env } from "../utils/env.js";
 
 
 export const getContactsController = async (req, res) => {
@@ -51,7 +54,7 @@ export const createContactController = async (req, res) => {
             });
         }
 
-        const contact = await createContact(req.body, req.user._id);
+        const contact = await createContact(req.body,req.file, req.user._id);
 
         res.status(201).json({
             status: 201,
@@ -89,21 +92,37 @@ export const deleteContactController = async (req, res, next) => {
         });
     }
 };
-export const patchContactController =async (req, res, next) => {
-    const contactId = req.params.id;
-    const userId = req.user._id.toString();
-  const result = await updateContact(contactId, userId, req.body);
+export const patchContactController = async (req, res, next) => {
+  const contactId = req.params.id;
+  const userId = req.user._id.toString();
+  const photo = req.file;
 
-  if (!result) {
-    next(createHttpError(403, 'Contact with this Id does not belong to yours contacts!'));
-    return;
+  let photoUrl;
+
+  try {
+    if (photo) {
+      if (env('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+    }
+    const payload = { ...req.body, ...(photoUrl && { photo: photoUrl }) };
+    const result = await updateContact(contactId, userId, payload);
+
+    if (!result) {
+      return next(createHttpError(403, 'Contact with this Id does not belong to your contacts!'));
+    }
+
+    res.json({
+      status: 200,
+      message: `Successfully patched a contact!`,
+      data: result.contact,
+    });
+  } catch (error) {
+    console.error('Error in patchContactController:', error);
+    next(error);
   }
-
-  res.json({
-    status: 200,
-    message: `Successfully patched a contact!`,
-    data: result.contact,
-  });
 };
 
 export const validateBody = (schema) => async (req, res, next) => { 
