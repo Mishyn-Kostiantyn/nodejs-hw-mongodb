@@ -2,6 +2,9 @@ import { Contacts } from "../db/models/contact.js";
 import mongoose from 'mongoose';
 import { calculatePaginationData } from "../utils/calculatePaginationData.js";
 import { SORT_ORDER } from "../constants/index.js";
+import { saveFileToUploadDir } from "../utils/saveFileToUploadDir.js";
+import { saveFileToCloudinary } from "../utils/saveFileToCloudinary.js";
+import { env } from "../utils/env.js";
 export const getContacts = async ({ page = 1, perPage = 5, sortBy='name',sortOrder=SORT_ORDER.ASC,filter={}, userId  }) => {
   
   
@@ -45,9 +48,17 @@ export    const getContactById = async (id, userId) => {
 
   return contact;
 };
-export const createContact= async (data, userId) => {
-    try {
-        const contact = await Contacts.create({...data,  userId: userId });
+export const createContact = async (data, photoFile, userId) => {
+  
+  
+  let photoUrl;
+  try {
+    if (photoFile) { if (env('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photoFile);
+    } else {
+      photoUrl = await saveFileToUploadDir(photoFile);
+    } };
+        const contact = await Contacts.create({...data,  userId: userId, photo: photoUrl });
         return contact;
     } catch (error) {
         console.error('Error in createContact:', error);

@@ -6,6 +6,7 @@ import { env } from './utils/env.js';
 import { HttpError } from 'http-errors';
 import rootRouter from './routers/index.js';
 import cookieParser from 'cookie-parser';
+import { UPLOAD_DIR } from './constants/index.js';
 
 const PORT = Number(env('PORT', '3000'));
 export const notFoundHandler = (req, res, next) => {
@@ -45,12 +46,14 @@ export const setupServer = () => {
     app.use((req, res, next) => { console.log(`Time:${new Date().toLocaleString()}`); next(); });
     app.get('/', (req, res) => { res.json({ message: 'Hello World - как-то так' }); });
     app.use(rootRouter);
-  app.use('*', (req, res, next) => {
+  app.use('*', (req, res) => {
         res.status(404).json({ message: 'Not found' });
   });
     app.use('*', notFoundHandler);
 
   app.use(errorHandler);
-    app.listen(PORT, () => console.log(`Server started on ${PORT}`));
+  app.listen(PORT, () => console.log(`Server started on ${PORT}`));
+  app.use('/uploads', express.static(UPLOAD_DIR));
 };
+
 // mongodb+srv://mishynk:hh65ovckRVz8OtsF@cluster0.tgrsice.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
