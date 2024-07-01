@@ -1,9 +1,9 @@
 import Joi from 'joi';
 
 export const updateContactSchema = Joi.object({
-    name: Joi.string().min(3).max(20),
-    email: Joi.string().email().min(3).max(20),
-    phoneNumber: Joi.string().min(3).max(20),
+    name: Joi.string().min(3).max(35),
+    email: Joi.string().email(),
+    phoneNumber: Joi.string().min(3).max(35),
     isFavourite: Joi.boolean(), 
     contactType: Joi.string().valid('work', 'home', 'personal'),
 });
