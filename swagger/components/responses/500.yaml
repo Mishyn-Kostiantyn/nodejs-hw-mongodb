@@ -1,0 +1,23 @@
+description: 'Internal Server Error'
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 500
+        message:
+          type: string
+          example: 'Unexpected server error'
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              enum:
+                - 'Error fetching contacts'
+                - 'Unexpected server error'
+                - 'Error fetching contact'
+                - 'Something went wrong'
+              example: 'Unexpected server error'

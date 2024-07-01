@@ -7,6 +7,7 @@ import { HttpError } from 'http-errors';
 import rootRouter from './routers/index.js';
 import cookieParser from 'cookie-parser';
 import { UPLOAD_DIR } from './constants/index.js';
+import {swaggerDocs}  from './middleware/swaggerDocs.js';
 
 const PORT = Number(env('PORT', '3000'));
 export const notFoundHandler = (req, res, next) => {
@@ -45,7 +46,9 @@ export const setupServer = () => {
   app.use(express.json());
     app.use((req, res, next) => { console.log(`Time:${new Date().toLocaleString()}`); next(); });
   app.get('/', (req, res) => { res.json({ message: 'Hello World - как-то так' }); });
+  app.use('/uploads', express.static(UPLOAD_DIR));
    app.use('/uploads', express.static(UPLOAD_DIR));
+  app.use('/api-docs', swaggerDocs());
     app.use(rootRouter);
   app.use('*', (req, res) => {
         res.status(404).json({ message: 'Not found' });
