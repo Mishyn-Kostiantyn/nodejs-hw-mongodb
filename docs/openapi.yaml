@@ -10,11 +10,9 @@ info:
 tags:
   - name: Contacts
     description: Operations with contacts.
-  - name: Auth
-    description: Auth operations.
-servers:
+ servers:
   - url: <http://localhost:3000>
-  - url: <https://example.com/api/v1>
+  - url: <https://nodejs-hw-mongodb-5-sofe.onrender.com>
 paths:
   /contacts/{id}:
     patch:
